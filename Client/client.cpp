@@ -1,6 +1,7 @@
 #include <QDataStream>
 
 #include "client.h"
+#include "../ITestMessage.pb.h"
 
 Client::Client()
 {
@@ -45,7 +46,9 @@ void Client::onReadyRead()
         }
 
         qDebug() << "Пакет пришел полностью";
-        /// возможно добавить десериализацию и отобразит в консоли
+
+        QPair<QString, QString> dataFromServer = deserialize(packet.mid(5));
+        qDebug() << "login: " << dataFromServer.first << " password: " << dataFromServer.second;
     }
 }
 
@@ -84,4 +87,18 @@ uint8_t Client::calcCRC(const QByteArray &data)
         crc ^= static_cast<uint8_t>(c);
     }
     return crc;
+}
+
+QPair<QString, QString> Client::deserialize(const QByteArray &data)
+{
+    ITestMessage message;
+    if (!message.ParseFromString(data.toStdString())) {
+        qDebug() << "Error while deserialize auth request";
+        return QPair<QString, QString>();
+    }
+
+    QString loginFromServer = QString::fromStdString(message.login());
+    QString passwordFromServer = QString::fromStdString(message.password());
+
+    return qMakePair(loginFromServer, passwordFromServer);
 }

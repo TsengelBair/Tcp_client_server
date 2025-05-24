@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QPair>
 
 class Client : public QObject
 {
@@ -18,6 +19,7 @@ private slots:
 private:
     bool validatePacket(const QByteArray &packet);
     uint8_t calcCRC(const QByteArray &data);
+    QPair<QString, QString> deserialize(const QByteArray &data);
 
 private:
     QTcpSocket* m_socket;
